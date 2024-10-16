@@ -1,0 +1,459 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}  % Required for math features
+\usepackage{listings} % Required for insertion of code
+\usepackage{booktabs} % Enhanced table features
+\usepackage{minted}
+\usepackage{geometry}
+\geometry{margin=1in}
+% Setup for the listings package to include SQL syntax highlighting
+\lstset{
+  language=SQL,
+  basicstyle=\ttfamily,
+  breaklines=true,
+  postbreak=\space,
+  breakindent=5pt,
+  showstringspaces=false
+}
+\title{Cw2 Data Management}
+\author{Theodoulos Hadjilambrou Student ID: 34200134}
+
+\date{April 2024}
+
+\begin{document}
+
+\maketitle
+\section{The Relational Model}
+
+
+\subsection{EX1:}  Express the relation directly represented in the dataset file. Assign relevant SQLite data types to each column.
+
+
+\vspace{5mm}
+
+
+
+The relational schema for the dataset is defined as follows:
+\begin{align*}
+\text{COVID\_Data}( & \text{dateRep TEXT}, \text{day INTEGER}, \text{month INTEGER}, \text{year INTEGER}, \\
+                    & \text{cases INTEGER}, \text{deaths INTEGER}, \text{countriesAndTerritories TEXT}, \\
+                    & \text{geoId TEXT}, \text{countryterritoryCode TEXT}, \text{popData2020 INTEGER}, \\
+                    & \text{continentExp INTEGER})
+\end{align*}
+   
+\vspace{10mm}
+
+% Schema Table
+\begin{table}[htbp]
+\centering
+\caption{COVID\_Data Schema}
+\label{tab:schema}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Attribute Name}            & \textbf{Data Type} \\ \midrule
+dateRep                            & TEXT               \\
+day                                & INTEGER            \\
+month                              & INTEGER            \\
+year                               & INTEGER            \\
+cases                              & INTEGER            \\
+deaths                             & INTEGER            \\
+countriesAndTerritories            & TEXT               \\
+geoId                              & TEXT               \\
+countryterritoryCode               & TEXT               \\
+popData2020                        & INTEGER            \\
+continentExp                       & TEXT               \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\subsection{EX2:} List the minimal set of Functional Dependencies (FDs)
+
+\vspace{2mm}
+Based on the attributes of the COVID\_Data table and the given assumptions, the minimal set of Functional Dependencies are as follows:
+\vspace{1mm}
+
+\begin{table}[htbp]
+\centering
+\caption{List of Functional Dependencies}
+\label{tab:functional_dependencies}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Dependency}                     & \textbf{Explanation}                                 \\ \midrule
+countryterritoryCode $\leftrightarrow$ countriesAndTerritories & Bijective relationship \\
+countryterritoryCode $\leftrightarrow$ geoId                    & Bijective relationship \\
+countryterritoryCode $\rightarrow$ popData2020                  & Unique per country \\
+countryterritoryCode $\rightarrow$ continentExp                 & Unique per country \\
+dateRep $\rightarrow$ day                                       & Date decomposition \\
+dateRep $\rightarrow$ month                                     & Date decomposition \\
+dateRep $\rightarrow$ year                                      & Date decomposition \\
+countriesAndTerritories + dateRep $\rightarrow$ cases           & Event-based reporting \\
+countriesAndTerritories + dateRep $\rightarrow$ deaths          & Event-based reporting \\ \bottomrule
+\end{tabular}
+\end{table}
+
+Assumptions:
+\begin{itemize}
+  \item Each country or territory is uniquely identified by the countryterritoryCode, which is a stable and unique identifier.
+  \item The geoId and countriesAndTerritories are functionally dependent on the countryterritoryCode and do not add additional information.
+  \item The popData2020 and continentExp are attributes that are also dependent on the countryterritoryCode.
+  \item The dateRep is a unique identifier for each date and is used to determine the individual components of the date: day, month, and year.
+  \item For each countriesAndTerritories and dateRep combination, the cases and deaths are recorded, indicating a unique count for each day.
+\end{itemize}
+
+\vspace{2mm}
+
+\subsection{EX3:} From your minimal set of functional dependencies, list the potential candidate keys
+
+\vspace{10mm}
+
+Given the functional dependencies established in the previous section, the potential candidate key for the COVID\_Data table is:
+
+\begin{itemize}
+  \item {[countryTerritoryCode, dateRep]}
+  \item {[geoID, dateRep]}
+    \item {[countriesAndTerritories, dateRep]}
+\end{itemize}
+
+
+\newpage
+\subsection{EX4:} Identify a suitable primary key, and justify your decision.
+
+\vspace{1mm}
+
+  Primary Key:
+\begin{itemize}
+  \item {[countryTerritoryCode, dateRep]}
+\end{itemize}
+
+\vspace{1mm}
+
+The [countryTerritoryCode, dateRep] combination is selected as the primary key due to its standardization, efficiency, and reliability. countryTerritoryCode is likely a standardized code that ensures consistency and unambiguity across different datasets, while dateRep allows us to capture the temporal aspect of the data.
+
+
+
+\maketitle
+\section{Normalisation}
+
+\vspace{1 mm}
+
+
+\subsection{EX5:} List any partial-key dependencies in the relation as it stands and any resulting additional relations you should create as part of the decomposition.
+
+\vspace{1mm}
+
+
+The following partial-key dependencies have been identified in the current relation:
+
+\vspace{1mm}
+
+\begin{itemize}
+  \item The attributes popData2020 and continentExp are dependent on countryTerritoryCode, which is part of the composite key [countryTerritoryCode, dateRep], but do not depend on dateRep, indicating partial dependency.
+  \item The attributes day, month, and year are solely dependent on dateRep and do not depend on countryTerritoryCode, indicating another set of partial dependencies.
+\end{itemize}
+
+\vspace{1mm}
+
+These dependencies imply that the current relation is not in 2nd Normal Form due to the existence of attributes that do not depend on the entire composite key.
+\vspace{5mm}
+
+
+
+
+\subsection{EX6:} Decompose the relation to achieve 2nd Normal Form and list the new relations with their fields, types, and keys.
+
+\vspace{1mm}
+
+\begin{table}[htbp]
+\centering
+\caption{Decomposed Relations to Achieve 2nd Normal Form}
+\label{tab:relations}
+\begin{tabular}{|p{4cm}|p{7cm}|p{4cm}|}
+\hline
+\textbf{Relation Name} & \textbf{Attributes} & \textbf{Key} \\ \hline
+Country Info Attributes & countryTerritoryCode, popData2020, continentExp, geoID, countriesAndTerritories & countryTerritoryCode \\ \hline
+Date Attributes & dateRep, day, month, year & dateRep \\ \hline
+Case Data & countryTerritoryCode, dateRep, cases, deaths  & [countryTerritoryCode, dateRep] \\ \hline
+\end{tabular}
+\end{table}
+
+
+\vspace{1mm}
+
+The process of decomposition involved creating separate tables where each non-key attribute is fully functionally dependent on a primary key. The Country Attributes Relation stores static information related to the country identified by countryTerritoryCode. The Date Attributes Relation maintains components of the date that can be derived from dateRep. This normalization eliminates the partial dependencies and ensures that the relations conform to 2nd Normal Form.
+
+\vspace{5mm}
+
+
+\subsection{EX7}List transitive dependencies.
+\begin{itemize}
+  \item According to my FDs:
+    
+    \begin{itemize}
+      \item countryTerritoryCode has a bijective relationship with both countriesAndTerritories and geoId, so they determine each other mutually and do not form a transitive dependency.
+      
+      \vspace{2mm}
+      
+      \item popData2020 and continentExp are directly dependent on countryTerritoryCode, which is a key attribute, not a non-key attribute.
+      
+      \vspace{2mm}
+      
+      \item dateRep directly determines day, month, and year, with no intermediate non-key attribute so not a transitive dependency.
+      
+      \vspace{2mm}
+      
+      \item The dependencies of cases and deaths on the combination of countryTerritoryCode + dateRep do not introduce any non-key to non-key dependencies.
+    
+    \end{itemize}
+\end{itemize}
+
+\subsection{EX8:} Convert your relations into 3rd Normal Form using your answers to the above.
+\vspace{1mm}
+
+
+In summary, all the non-key attributes are dependent on key attributes, and there are no chains of dependencies where a non-key attribute determines another non-key attribute that determines a key attribute. Therefore, the relations, as defined by these FDs, do not exhibit transitive dependencies and are in 3NF.
+    
+
+ 
+
+
+\subsection{EX9:} Finally, convert your relations into Boyce-Codd Normal Form. Justify and explain how your relations are in BCNF.
+
+
+\vspace{1mm}
+
+To be in Boyce-Codd Normal Form, a relation must satisfy the following condition: for every one of its non-trivial functional dependencies \( X \rightarrow A \), \( X \) must be a superkey.
+
+\vspace{1mm}
+
+In our case, all the functional dependencies identified:
+
+\vspace{5mm}
+
+\begin{itemize}
+  \item countryTerritoryCode \( \rightarrow \) popData2020, continentExp
+  \item dateRep \( \rightarrow \) day, month, year
+  \item countryTerritoryCode, dateRep \( \rightarrow \) cases, deaths
+\end{itemize}
+
+\vspace{5mm}
+
+have superkeys as their determinants. The determinant for each functional dependency is either a candidate key or a part of a candidate key:
+
+\vspace{5mm}
+
+\begin{itemize}
+  \item The attribute countryTerritoryCode is a candidate key in the Country Information relation, uniquely identifying each record.
+  \item The attribute dateRep is a candidate key in the Date Information relation, uniquely identifying each record.
+  \item The composite key \( [countryTerritoryCode, dateRep] \) is a superkey in the Case Data relation, uniquely identifying each record.
+\end{itemize}
+
+\vspace{5mm}
+
+Since there are no attributes determined by anything less than a candidate key, our relations conform to BCNF. There are no partial key dependencies or transitive dependencies, and all determinants are candidate keys.
+
+\vspace{5mm}
+
+Therefore, our data is in Boyce-Codd Normal Form.
+
+
+\maketitle
+\section{Modelling}
+
+\vspace{1mm}
+
+
+\subsection{EX10:} Import,Export,Link
+
+\vspace{2 mm}
+
+To prepare the data for analysis, the following steps were performed:
+
+\begin{enumerate}
+  \item \textbf{SQLite Database Creation:}
+  \begin{lstlisting}
+  sqlite3 coronavirus.db
+  \end{lstlisting}
+  \item \textbf{CSV Data Import:}
+  \begin{lstlisting}
+  .mode csv
+  .import '/path/to/dataset.csv' dataset
+  \end{lstlisting}
+  
+  \item \textbf{Data Export:}
+
+  \begin{lstlisting}
+  .output dataset.sql
+  .dump dataset
+  \end{lstlisting}
+
+  \item \textbf{DataGrip Connection:}
+  DataGrip was opened and configured to connect to the \texttt{coronavirus.db} database. The database was successfully added, allowing for further data manipulation and querying within DataGrip's GUI.
+\end{enumerate}
+
+
+\subsection{EX11:} 
+
+
+\begin{minted}[linenos]{bash}
+CREATE TABLE CountryInfo (
+  countryterritoryCode TEXT PRIMARY KEY,
+  countriesAndTerritories TEXT,
+  popData2020 INTEGER,
+  continentExp TEXT
+); 
+CREATE TABLE DateInfo (
+  dateRep TEXT PRIMARY KEY,
+  day INTEGER,
+  month INTEGER,
+  year INTEGER
+);
+CREATE TABLE CaseData (
+  countryterritoryCode TEXT ,
+  dateRep TEXT,
+  cases INTEGER,
+  deaths INTEGER,
+  PRIMARY KEY
+(countryterritoryCode,dateRep)
+);
+\end{minted}
+
+\newpage
+
+\subsection{EX12:}
+
+
+\begin{minted}[linenos]{bash}
+INSERT INTO CountryInfo (countryterritoryCode, countriesAndTerritories, popData2020, continentExp)
+
+SELECT DISTINCT countryterritoryCode,countriesAndTerritories,popData2020, continentExp)
+FROM dataset;
+
+INSERT INTO CaseData (countryterritoryCode, dateRep, cases, deaths)
+SELECT DISTINCT countryterritoryCode, dateRep, cases, deaths
+FROM dataset;
+
+INSERT INTO DateInfo (dateRep, day, month, year)
+SELECT DISTINCT dateRep, day, month, year
+FROM dataset;
+\end{minted}
+\subsection{EX13:}
+
+\begin{lstlisting}
+     The following commands all work normally when run:
+\end{lstlisting}
+   
+
+\begin{minted}[linenos]{bash}
+sqlite3 coronavirus.db < dataset.sql
+sqlite3 coronavirus.db < ex11.sql
+sqlite3 coronavirus.db < ex12.sql
+\end{minted}
+
+
+\section{Querying}
+
+
+\subsection{EX14:}
+
+\begin{minted}[linenos]{bash}
+SELECT SUM(cases) AS TotalCases, SUM(deaths) AS TotalDeaths FROM CaseData;
+\end{minted}
+
+
+
+\subsection{EX15:}
+
+
+\begin{minted}[linenos]{bash}
+SELECT
+  dateRep,
+  SUM(cases) as TotalCases
+FROM
+  CaseData
+WHERE
+  countryterritoryCode = 'GBR' 
+GROUP BY
+  dateRep
+ORDER BY
+  strftime('%Y-%m-%d', SUBSTR(dateRep, 7, 4) || '-' ||SUBSTR(dateRep,4,2) || '-' ||
+  SUBSTR(dateRep, 1, 2));
+\end{minted}
+\newpage
+
+\subsection{EX16:}
+
+\begin{minted}[linenos]{bash}
+SELECT
+  CountryInfo.countriesAndTerritories,
+  CaseData.dateRep,
+  CaseData.cases,
+  CaseData.deaths
+FROM
+  CaseData
+JOIN
+  CountryInfo ON CaseData.countryterritoryCode = CountryInfo.countryterritoryCode
+ORDER BY
+  CountryInfo.countriesAndTerritories,strftime('%Y-%m-%d',SUBSTR(CaseData.dateRep, 7, 4)
+  || '-' || SUBSTR(CaseData.dateRep, 4, 2)
+  || '-' || SUBSTR(CaseData.dateRep, 1, 2));
+\end{minted}
+
+\subsection{EX17:}
+
+\begin{minted}[linenos]{bash}
+SELECT CountryInfo.countriesAndTerritories,
+       ROUND((SUM(CaseData.cases) * 100.0) / CountryInfo.popData2020, 2)  AS CasesPercentage,
+       ROUND((SUM(CaseData.deaths) * 100.0) / CountryInfo.popData2020, 2) AS DeathsPercentage
+
+FROM CaseData
+         JOIN
+     CountryInfo ON CaseData.countryterritoryCode = CountryInfo.countryterritoryCode
+GROUP BY
+    CountryInfo.countriesAndTerritories
+\end{minted}
+
+
+\subsection{EX18:}
+
+
+
+\begin{minted}[linenos]{bash}
+SELECT
+  CountryInfo.countriesAndTerritories,
+  ROUND((SUM(CaseData.deaths) * 100.0 / SUM(CaseData.cases)), 2) AS DeathPercentage
+FROM
+  CaseData
+JOIN
+  CountryInfo ON CaseData.countryterritoryCode = CountryInfo.countryterritoryCode
+GROUP BY
+  CountryInfo.countriesAndTerritories
+ORDER BY
+  DeathPercentage DESC
+LIMIT
+  10;
+\end{minted}
+
+\newpage
+
+\subsection{EX19:}
+
+\begin{minted}[linenos]{bash}
+SELECT
+  dateRep,
+  SUM(cases) OVER (ORDER BY strftime('%Y-%m-%d', SUBSTR(dateRep, 7, 4) || '-' || SUBSTR(dateRep, 4, 2)
+  || '-' || SUBSTR(dateRep, 1, 2))) AS CumulativeCases,
+  SUM(deaths) OVER (ORDER BY strftime('%Y-%m-%d', SUBSTR(dateRep, 7, 4)|| '-' || SUBSTR(dateRep, 4, 2) || '-' ||
+  SUBSTR(dateRep, 1, 2))) AS CumulativeDeaths
+FROM
+  CaseData
+WHERE
+  countryterritoryCode = 'GBR'
+ORDER BY
+  strftime('%Y-%m-%d', SUBSTR(dateRep, 7, 4) || '-' ||
+  SUBSTR(dateRep, 4, 2) || '-' || SUBSTR(dateRep, 1, 2));
+\end{minted}
+
+
+
+
+\end{document}

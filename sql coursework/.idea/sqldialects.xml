@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/ex11.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/ex12.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/ex14.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/ex15.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/ex16.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/ex17.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/ex18.sql" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/ex19.sql" dialect="GenericSQL" />
+  </component>
+</project>
